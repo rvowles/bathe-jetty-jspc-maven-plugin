@@ -1,3 +1,26 @@
 = Bathe JSPC Compiler for Jetty
 
-This assumes the use of web fragments and properly constructs them for JSPs.
+This assumes the use of web fragments and properly constructs them for JSPs. The standard jsp compiler for Jetty
+does not support web fragments, this one *only* supports web fragments.
+
+[source,xml]
+----
+<plugin>
+  <groupId>com.bluetrainsoftware.bathe.web</groupId>
+  <artifactId>bathe-jetty-jspc-maven-plugin</artifactId>
+  <version>1.2</version>
+  <executions>
+    <execution>
+		  <id>war-compile-jsp</id>
+		  <goals>
+						<goal>jspc</goal>
+		  </goals>
+		  <phase>compile</phase>
+    </execution>
+  </executions>
+</plugin>
+
+----
+
+It is a bit icky because it dictates the version of Jetty and requires re-release for a new version. Generally that
+isn't too much of a problem as  the jsp layer doesn't change between verions of Jetty.
