@@ -25,7 +25,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Set;;
 import java.util.regex.Pattern;
 
 import org.apache.jasper.JspC;
@@ -235,6 +235,7 @@ public class JspcMojo extends AbstractMojo {
 			compile();
 			cleanupSrcs();
 			deleteCompiledJspsFromTarget();
+			cleanupEmptyResourceFolder();
 			mergeWebXml();
 		} catch (Exception e) {
 			throw new MojoExecutionException("Failure processing jsps", e);
@@ -339,6 +340,35 @@ public class JspcMojo extends AbstractMojo {
 			}
 		} else {
 			getLog().info(">>>>>>>>>> No jsp files cleaned, it is recommended these do not get bundled with your web fragment to avoid JRE issues. <<<<<<<<<<<<");
+		}
+	}
+
+	protected void cleanupEmptyResourceFolder() {
+		try {
+			doCleanUpEmptyResourceFolder();
+		} catch (IOException ioEx) {
+			getLog().warn(String.format("Cannot cleanup the empty resource folder because of %s", ioEx.getMessage()));
+		}
+	}
+
+	/**
+	 * Cleanup empty resource directory
+	 *
+	 * @throws IOException
+	 */
+	private void doCleanUpEmptyResourceFolder() throws IOException {
+		if (deleteJspPath != null) {
+			StringBuilder resourcePath = new StringBuilder();
+			resourcePath.append(project.getBuild().getOutputDirectory()).append(File.separator).append(deleteJspPath);
+			List<String> childDirectoryList = FileUtils.getDirectoryNames(new File(resourcePath.toString()), "*", null, true);
+			for (String directory : childDirectoryList) {
+				File folder = new File(directory);
+				List<File> fileList = FileUtils.getFiles(folder, "**", null, false);
+				if (folder.exists() && fileList.size() == 0) {
+					getLog().info("Cleaned directory " + folder.getPath());
+					FileUtils.deleteDirectory(folder);
+				}
+			}
 		}
 	}
 
