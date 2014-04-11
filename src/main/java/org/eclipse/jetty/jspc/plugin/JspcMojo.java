@@ -164,9 +164,9 @@ public class JspcMojo extends AbstractMojo {
 
 
 	/**
-	 * Location of web-fragment.xml. Defaults to src/main/resources/web-fragment.xml.
+	 * Location of web-fragment.xml. Defaults to src/main/resources/META-INF/web-fragment.xml.
 	 *
-	 * @parameter default-value="${basedir}/src/main/resources/META-INF/resources/web-fragment.xml"
+	 * @parameter default-value="${basedir}/src/main/resources/META-INF/web-fragment.xml"
 	 */
 	private String webFragmentXml;
 
@@ -359,7 +359,7 @@ public class JspcMojo extends AbstractMojo {
 			}
 
 			File mergedWebXmlParent = new File(project.getBuild().getOutputDirectory(),
-				"META-INF/resources");
+				"META-INF");
 
 			mergedWebXmlParent.mkdirs();
 
