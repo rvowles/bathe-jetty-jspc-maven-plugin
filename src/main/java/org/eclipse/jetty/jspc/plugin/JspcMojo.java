@@ -156,6 +156,15 @@ public class JspcMojo extends AbstractMojo {
 
 
 	/**
+	 * Controls whether plugin removes the destination jsp to ensure that only pre-compiled jsps are
+	 * used. This is useful when running on a JVM in your initial CD environment.
+	 *
+	 * @parameter default-value="META-INF/resources"
+	 */
+	private String deleteJspPath;
+
+
+	/**
 	 * Root directory for all html/jsp etc files
 	 *
 	 * @parameter default-value="${basedir}/src/main/resources/META-INF/resources"
@@ -225,6 +234,7 @@ public class JspcMojo extends AbstractMojo {
 			prepare();
 			compile();
 			cleanupSrcs();
+			deleteCompiledJspsFromTarget();
 			mergeWebXml();
 		} catch (Exception e) {
 			throw new MojoExecutionException("Failure processing jsps", e);
@@ -297,6 +307,39 @@ public class JspcMojo extends AbstractMojo {
 		List fileNames = FileUtils.getFileNames(new File(webAppSourceDirectory), includes, excludes, false);
 		return StringUtils.join(fileNames.toArray(new String[0]), ",");
 
+	}
+
+	protected void deleteCompiledJspsFromTarget() throws IOException {
+		if (deleteJspPath != null) {
+
+			if (!deleteJspPath.endsWith("/")) {
+				deleteJspPath += "/";
+			}
+
+			List<String> fileNames = FileUtils.getFileNames(new File(webAppSourceDirectory), includes, excludes, false);
+			List<String> cleaned = new ArrayList<>();
+			List<String> uncleaned = new ArrayList<>();
+
+			for(String name : fileNames) {
+				File jspFile = new File(project.getBuild().getOutputDirectory(), deleteJspPath + name);
+				if (jspFile.exists()) {
+					jspFile.delete();
+					cleaned.add(name);
+				} else {
+					uncleaned.add(name);
+				}
+			}
+
+			if (cleaned.size() > 0) {
+				getLog().info("Cleaned files " + StringUtils.join(cleaned.iterator(), ","));
+			}
+
+			if (uncleaned.size() > 0) {
+				getLog().error("Could not find files " + StringUtils.join(uncleaned.iterator(), ","));
+			}
+		} else {
+			getLog().info(">>>>>>>>>> No jsp files cleaned, it is recommended these do not get bundled with your web fragment to avoid JRE issues. <<<<<<<<<<<<");
+		}
 	}
 
 	/**
