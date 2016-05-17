@@ -33,6 +33,10 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -56,19 +60,14 @@ import org.eclipse.jetty.util.resource.Resource;
  * Note that the same java compiler will be used as for on-the-fly compiled
  * jsps, which will be the Eclipse java compiler.
  * </p>
- * <p/>
  * <p>
  * See <a
  * href="http://docs.codehaus.org/display/JETTY/Maven+Jetty+Jspc+Plugin">Usage
  * Guide</a> for instructions on using this plugin.
  * </p>
  *
- * @author janb
- * @goal jspc
- * @phase process-classes
- * @requiresDependencyResolution compile
- * @description Runs jspc compiler to produce .java and .class files
  */
+@Mojo(name = "jspc", requiresProject = true, requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class JspcMojo extends AbstractMojo {
 	public static final String END_OF_WEBAPP = "</web-fragment>";
 
@@ -76,19 +75,16 @@ public class JspcMojo extends AbstractMojo {
 	/**
 	 * Whether or not to include dependencies on the plugin's classpath with &lt;scope&gt;provided&lt;/scope&gt;
 	 * Use WITH CAUTION as you may wind up with duplicate jars/classes.
-	 *
-	 * @parameter default-value="false"
-	 * @since jetty-7.6.3
 	 */
+	@Parameter( defaultValue = "false")
 	private boolean useProvidedScope;
 
 	/**
 	 * The artifacts for the project.
 	 *
-	 * @parameter expression="${project.artifacts}"
-	 * @readonly
 	 * @since jetty-7.6.3
 	 */
+	@Parameter( defaultValue = "${project.artifacts}", required = true)
 	private Set projectArtifacts;
 
 
@@ -99,15 +95,15 @@ public class JspcMojo extends AbstractMojo {
 	 * @required
 	 * @readonly
 	 */
+	@Parameter(readonly = true, required = true, defaultValue = "${project}")
 	private MavenProject project;
 
 
 	/**
 	 * The artifacts for the plugin itself.
 	 *
-	 * @parameter expression="${plugin.artifacts}"
-	 * @readonly
 	 */
+	@Parameter( defaultValue = "${plugin.artifacts}", readonly = true)
 	private List pluginArtifacts;
 
 
@@ -115,8 +111,8 @@ public class JspcMojo extends AbstractMojo {
 	 * File into which to generate the &lt;servlet&gt; and
 	 * &lt;servlet-mapping&gt; tags for the compiled jsps
 	 *
-	 * @parameter default-value="${basedir}/target/webfrag.xml"
 	 */
+	@Parameter(defaultValue = "${basedir}/target/webfrag.xml")
 	private String webXmlFragment;
 
 	/**
@@ -128,6 +124,7 @@ public class JspcMojo extends AbstractMojo {
 	 *
 	 * @parameter
 	 */
+	@Parameter
 	private String insertionMarker;
 
 	/**
@@ -135,23 +132,22 @@ public class JspcMojo extends AbstractMojo {
 	 * webAppSourceDirectory. The merged file will go into the same directory as
 	 * the webXmlFragment.
 	 *
-	 * @parameter default-value="true"
 	 */
+	@Parameter(defaultValue = "true")
 	private boolean mergeFragment;
 
 	/**
 	 * The destination directory into which to put the compiled jsps.
 	 *
-	 * @parameter default-value="${project.build.outputDirectory}"
 	 */
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private String generatedClasses;
 
 	/**
 	 * Controls whether or not .java files generated during compilation will be
 	 * preserved.
-	 *
-	 * @parameter default-value="false"
 	 */
+	@Parameter(defaultValue = "false")
 	private boolean keepSources;
 
 
@@ -159,33 +155,30 @@ public class JspcMojo extends AbstractMojo {
 	 * Controls whether plugin removes the destination jsp to ensure that only pre-compiled jsps are
 	 * used. This is useful when running on a JVM in your initial CD environment.
 	 *
-	 * @parameter default-value="META-INF/resources"
 	 */
+	@Parameter(defaultValue = "META-INF/resources")
 	private String deleteJspPath;
 
 
 	/**
 	 * Root directory for all html/jsp etc files
-	 *
-	 * @parameter default-value="${basedir}/src/main/resources/META-INF/resources"
 	 */
+	@Parameter(defaultValue = "${basedir}/src/main/resources/META-INF/resources")
 	private String webAppSourceDirectory;
 
 
 	/**
 	 * Location of web-fragment.xml. Defaults to src/main/resources/META-INF/web-fragment.xml.
-	 *
-	 * @parameter default-value="${basedir}/src/main/resources/META-INF/web-fragment.xml"
 	 */
+	@Parameter(defaultValue = "${basedir}/src/main/resources/META-INF/web-fragment.xml")
 	private String webFragmentXml;
 
 
 	/**
 	 * The comma separated list of patterns for file extensions to be processed. By default
 	 * will include all .jsp and .jspx files.
-	 *
-	 * @parameter default-value="**\/*.jsp, **\/*.jspx"
 	 */
+	@Parameter(defaultValue = "**/*.jsp, **/*.jspx")
 	private String includes;
 
 	/**
@@ -193,13 +186,14 @@ public class JspcMojo extends AbstractMojo {
 	 *
 	 * @parameter default_value="**\/.svn\/**";
 	 */
+	@Parameter(defaultValue = "**/.svn/**,**/.git/**")
 	private String excludes;
 
 	/**
 	 * The location of the compiled classes for the webapp
 	 *
-	 * @parameter expression="${project.build.outputDirectory}"
 	 */
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File classesDirectory;
 
 
@@ -208,8 +202,11 @@ public class JspcMojo extends AbstractMojo {
 	 *
 	 * @parameter default-value=".*taglibs[^/]*\.jar|.*jstl-impl[^/]*\.jar$
 	 */
+	@Parameter(defaultValue = ".*taglibs[^/]*\\.jar|.*jstl-impl[^/]*\\.jar$")
 	private String tldJarNamePatterns;
 
+	@Parameter
+	private String packageName;
 
 	/**
 	 * The JspC instance being used to compile the jsps.
@@ -279,6 +276,10 @@ public class JspcMojo extends AbstractMojo {
 		if (jspc == null)
 			jspc = new JspC();
 
+		if (packageName != null) {
+			jspc.setPackage(packageName);
+		}
+
 		jspc.setWebXmlFragment(webXmlFragment);
 		jspc.setUriroot(webAppSourceDirectory);
 		jspc.setOutputDir(generatedClasses);
@@ -346,7 +347,7 @@ public class JspcMojo extends AbstractMojo {
 	 * Until Jasper supports the option to generate the srcs in a different dir
 	 * than the classes, this is the best we can do.
 	 *
-	 * @throws Exception
+	 * @throws Exception if it can't clean up sources
 	 */
 	public void cleanupSrcs() throws Exception {
 		// delete the .java files - depending on keepGenerated setting
@@ -377,14 +378,14 @@ public class JspcMojo extends AbstractMojo {
 
 	/**
 	 * Take the web fragment and put it inside a copy of the web.xml.
-	 * <p/>
+	 * <p>
 	 * You can specify the insertion point by specifying the string in the
 	 * insertionMarker configuration entry.
-	 * <p/>
+	 * </p>
 	 * If you dont specify the insertionMarker, then the fragment will be
 	 * inserted at the end of the file just before the &lt;/webapp&gt;
 	 *
-	 * @throws Exception
+	 * @throws Exception if stuff goes wrong
 	 */
 	public void mergeWebXml() throws Exception {
 		if (mergeFragment) {
@@ -456,12 +457,12 @@ public class JspcMojo extends AbstractMojo {
 
 	/**
 	 * Set up the execution classpath for Jasper.
-	 * <p/>
+	 * <p>
 	 * Put everything in the classesDirectory and all of the dependencies on the
 	 * classpath.
+	 * </p>
 	 *
-	 * @throws Exception
-	 * @returns a list of the urls of the dependencies
+	 * @return a list of the urls of the dependencies
 	 */
 	private List<URL> setUpWebAppClassPath() throws Exception {
 		//add any classes from the webapp
@@ -536,12 +537,13 @@ public class JspcMojo extends AbstractMojo {
 	/**
 	 * Glassfish jsp requires that we set up the list of system jars that have
 	 * tlds in them.
-	 * <p/>
+	 * <p>
 	 * This method is a little fragile, as it relies on knowing that the jstl jars
 	 * are the only ones in the system path that contain tlds.
+	 * </p>
 	 *
-	 * @return
-	 * @throws Exception
+	 * @return system jars with TLDs
+	 * @throws Exception - if we can't find any
 	 */
 	private List<URL> getSystemJarsWithTlds() throws Exception {
 		final List<URL> list = new ArrayList<URL>();
