@@ -145,7 +145,6 @@ public class JspcMojo extends AbstractMojo {
   @Parameter(defaultValue = "false")
   private boolean keepSources;
 
-
   /**
    * Controls whether plugin removes the destination jsp to ensure that only pre-compiled jsps are
    * used. This is useful when running on a JVM in your initial CD environment.
@@ -202,6 +201,20 @@ public class JspcMojo extends AbstractMojo {
   private String packageName;
 
   /**
+   * <p>Specifies the version of the VM to use for the source in the JSP compilation.</p>
+   */
+
+  @Parameter(defaultValue = "${maven.compiler.source}")
+  private String compilerSourceVM;
+
+  /**
+   * <p>Specifies the version of the VM to use for the target in the JSP compilation.</p>
+   */
+
+  @Parameter(defaultValue = "${maven.compiler.target}")
+  private String compilerTargetVM;
+
+  /**
    * The JspC instance being used to compile the jsps.
    *
    * @parameter
@@ -249,7 +262,6 @@ public class JspcMojo extends AbstractMojo {
       webAppUrls.add(u);
     }
 
-
     //use the classpaths as the classloader
     URLClassLoader webAppClassLoader = new URLClassLoader((URL[]) webAppUrls.toArray(new URL[0]), currentClassLoader);
     StringBuffer webAppClassPath = new StringBuffer();
@@ -280,6 +292,19 @@ public class JspcMojo extends AbstractMojo {
     jspc.setCompile(true);
     jspc.setSystemClassPath(sysClassPath);
 
+    if (null != compilerSourceVM && !compilerSourceVM.isEmpty()) {
+      jspc.setCompilerSourceVM(compilerSourceVM);
+    }
+    else {
+      getLog().info("no compiler source vm set --> using default");
+    }
+
+    if (null != compilerTargetVM && !compilerTargetVM.isEmpty()) {
+      jspc.setCompilerTargetVM(compilerTargetVM);
+    }
+    else {
+      getLog().info("no compiler target vm set --> using default");
+    }
 
     // JspC#setExtensions() does not exist, so
     // always set concrete list of files that will be processed.
