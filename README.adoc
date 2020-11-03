@@ -20,6 +20,20 @@ if you rely on your jsps existing.
           <goal>jspc</goal>
         </goals>
         <phase>compile</phase>
+        <dependencies>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jsp</artifactId>
+                <version>${jetty.version}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
         <configuration>
             <compilerSourceVM>1.8</compilerSourceVM>
             <compilerTargetVM>1.8</compilerTargetVM>
@@ -35,5 +49,6 @@ isn't too much of a problem as  the jsp layer doesn't change between versions of
 
 == Changelog
 
+- 1.6 - you must now include your own version of the jetty libraries, they are provided now.
 - 1.5 - update to allow using a later language release. Warning, I no longer use Jetty, so this isn't getting
 much love.
