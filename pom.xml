@@ -10,7 +10,7 @@
 	<groupId>com.bluetrainsoftware.bathe.web</groupId>
 	<artifactId>bathe-jetty-jspc-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
-	<version>1.6</version>
+	<version>1.7-SNAPSHOT</version>
 	<name>Jetty :: Jetty JSPC Maven Plugin</name>
 
 	<properties>
@@ -147,8 +147,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-  <scm>
-    <tag>bathe-jetty-jspc-maven-plugin-1.6</tag>
-  </scm>
 </project>
